@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from customtkinter import filedialog
 import os
+import sys
 
 # Class for the main application
 class App(ctk.CTk):
@@ -13,6 +14,15 @@ class App(ctk.CTk):
         if os.path.exists(icon_path):
             self.iconbitmap(icon_path)
         ctk.set_appearance_mode("System")
+
+        if sys.platform.startswith("win"):
+            # Apply the mica theme for windows (works with win 11)
+            from ctypes import windll, byref, sizeof, c_int
+            HWND = windll.user32.GetParent(self.winfo_id())
+            if sys.getwindowsversion().build < 22523:    
+                windll.dwmapi.DwmSetWindowAttribute(HWND, 1029, byref(c_int(0x01)), sizeof(c_int))
+            else:
+                windll.dwmapi.DwmSetWindowAttribute(HWND, 35, byref(c_int(35)), sizeof(c_int))
 
         # Create and pack the TabFrame
         self.tab_frame = TabFrame(self, self.update_content)
@@ -55,12 +65,12 @@ class TabFrame(ctk.CTkFrame):
         self.tab4.pack(pady=5, padx=10, fill="both", expand=True)
         
         # Toggle
-        self.toggle1 = ctk.CTkSwitch(self, text="Toggle", command=self.toggle_appearance_mode)
+        self.toggle1 = ctk.CTkSwitch(self, text="Theme", command=self.toggle_appearance_mode)
         self.toggle1.pack(pady=25, padx=10, fill="both", )
     
     def update_tab_colors(self, active_tab):
-        #default_color = "#1F6AA5"  # Blue
-        default_color = '"#A0A0A0", "#505050"' # Grey
+        default_color = "#1F6AA5"  # Blue
+        #default_color = '"#A0A0A0", "#505050"' # Grey
         selected_color = "#324B6E" # Dark Blue
 
         self.tab1.configure(fg_color=("#A0A0A0", "#505050"))
@@ -69,20 +79,22 @@ class TabFrame(ctk.CTkFrame):
         self.tab4.configure(fg_color=("#A0A0A0", "#505050"))
 
         if active_tab == "Validate":
-            self.tab1.configure(fg_color=selected_color)
+            self.tab1.configure(fg_color=(default_color,selected_color))
         elif active_tab == "Build":
-            self.tab2.configure(fg_color=(selected_color))
+            self.tab2.configure(fg_color=(default_color,selected_color))
         elif active_tab == "Distribute":
-            self.tab3.configure(fg_color=selected_color)
+            self.tab3.configure(fg_color=(default_color,selected_color))
         elif active_tab == "Report":
-            self.tab4.configure(fg_color=selected_color)
+            self.tab4.configure(fg_color=(default_color,selected_color))
 
     def toggle_appearance_mode(self):
         # Toggle between light and dark modes
         if self.toggle1.get() == 1:
             ctk.set_appearance_mode("Dark")
+            self.toggle1.configure(text="Dark")
         else:
             ctk.set_appearance_mode("Light")
+            self.toggle1.configure(text="Light")
 
     def show_validate_widgets():
         self.content_frame.Clear()
@@ -134,7 +146,7 @@ class TitleFrame(ctk.CTkFrame):
         self.title.pack(padx=10, expand=True, side="left")
         
         #combobox_var = ctk.StringVar(value="option 2")
-        self.combobox1 = ctk.CTkComboBox(self, state="readonly")
+        self.combobox1 = ctk.CTkComboBox(self, state="readonly", button_color=("#1F6AA5","#324B6E"), border_color=("#A0A0A0", "#505050"))
         self.combobox1.pack(side="right")
     
     # Update the title text based on the selected tab
@@ -169,7 +181,7 @@ class InputFrame(ctk.CTkFrame):
         self.dialog_open = False
         self.entry.bind("<FocusIn>", self.open_file_dialog)
 
-        self.button = ctk.CTkButton(self, text="Enter")
+        self.button = ctk.CTkButton(self, text="Enter", state="disabled")
         self.button.pack(pady=10, padx=10, side="right")
     
     def open_file_dialog(self, event):
@@ -180,6 +192,7 @@ class InputFrame(ctk.CTkFrame):
             if file_path:
                 self.entry.delete(0, "end")
                 self.entry.insert(0, file_path)
+                self.button.configure(state="normal")
             self.dialog_open = False
 
 
