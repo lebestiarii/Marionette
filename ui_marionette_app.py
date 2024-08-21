@@ -7,12 +7,12 @@ class App(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("Marionette - Setup Assistant")
-
+        # set aesthetics
+        self.title("Marionette App - Setup Assistant")
         icon_path = os.path.join(os.path.dirname(__file__), 'favicon.ico')
-        self.iconbitmap(icon_path)
+        if os.path.exists(icon_path):
+            self.iconbitmap(icon_path)
         ctk.set_appearance_mode("System")
-        ctk.set_default_color_theme("blue")
 
         # Create and pack the TabFrame
         self.tab_frame = TabFrame(self, self.update_content)
@@ -195,7 +195,7 @@ if __name__ == "__main__":
     app.minsize(app.winfo_width(), app.winfo_height())
     x_cordinate = int((app.winfo_screenwidth() / 2) - (app.winfo_width() / 2))
     y_cordinate = int((app.winfo_screenheight() / 2) - (app.winfo_height() / 2))
-    app.geometry("+{}+{}".format(x_cordinate, y_cordinate-20))
+    app.geometry("+{}+{}".format(x_cordinate-300, y_cordinate-200))
     app.resizable(False, False)
 
     for index in [0, 1, 2]:
